@@ -31,11 +31,11 @@ def handle(data_writer=CsvWriter()):
 
 
 def get_aircraft():
-    api_key = os.environ["RAPID_API_ADSBX_KEY"]
-    url =  f"https://adsbexchange-com1.p.rapidapi.com/json/lat/{LATLON[0]}/lon/{LATLON[1]}/dist/10/"
+    api_key = os.environ["ADSBX_API_KEY"]
+    url =  f"https://adsbexchange.com/api/aircraft/json/lat/{LATLON[0]}/lon/{LATLON[1]}/dist/10/"
     headers = {
-        'x-rapidapi-host': "adsbexchange-com1.p.rapidapi.com",
-        'x-rapidapi-key': api_key
+        'api-auth': api_key,
+        'accept-encoding': 'gzip'
     }
 
     response = requests.get(url, headers=headers)
