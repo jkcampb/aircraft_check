@@ -18,7 +18,8 @@ def handle(db=CsvDB()):
         db.write(new_data=result_df)
 
     for icao in aircraft_icaos:
-        check_aircraft_circling(db, icao)
+        df = db.read(icao, timespan_min=30)
+        check_aircraft_circling(df, icao)
 
 
 def get_aircraft():
@@ -35,11 +36,24 @@ def get_aircraft():
     return pd.DataFrame(results["ac"])
 
 
-def check_aircraft_circling(db, icao):
-    df = db.read(icao, timespan_min=30)
-    df.sort_values("posttime", axis=1, inplace=True)
+def check_circling(deg=1080):
+    return
+    
 
-    heading_delta = calc_heading(df)
+def get_all_headings(df):
+    df["next_lat"] = df["lat"].shift(-1, axis=0)
+    df["next_lon"] = df["lon"].shift(-1, axis=0)
+
+    headings = list(
+        df.apply(
+            lambda x: calc_heading(
+                (x["lat"], x["lon"]), (x["next_lat"], x["next_lon"])
+            ),
+            axis=1,
+        )
+    )
+
+    return headings[:-1]
 
 
 def calc_heading(latlon1, latlon2):
@@ -48,12 +62,13 @@ def calc_heading(latlon1, latlon2):
     latlon2 = tuple(x * math.pi / 180 for x in latlon2)
 
     x = math.cos(latlon2[0]) * math.sin(latlon2[1] - latlon1[1])
-    y = math.cos(latlon1[0]) * math.sin(latlon2[0]) \
-         - math.sin(latlon1[0]) * math.cos(latlon2[0]) * math.cos(latlon2[1] - latlon1[1])
+    y = math.cos(latlon1[0]) * math.sin(latlon2[0]) - math.sin(latlon1[0]) * math.cos(
+        latlon2[0]
+    ) * math.cos(latlon2[1] - latlon1[1])
 
-    beta = math.atan2(x,y)
+    beta = math.atan2(x, y)
 
-    return beta * 180 / math.pi
+    return round(beta * 180 / math.pi, 2)
 
 
 if __name__ == "__main__":

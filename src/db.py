@@ -29,4 +29,5 @@ class CsvDB:
         df_filter = (df['icao'] == icao) & \
              (df['postime'] >= ((datetime.now().timestamp()  - timespan_min * 60) * 1000))
 
-        return df[df_filter]
+
+        return df[df_filter].sort_values("postime", axis=1, inplace=True)
