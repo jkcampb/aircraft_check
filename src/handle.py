@@ -1,10 +1,11 @@
 import math
 import os
 
+import numpy as np
 import pandas as pd
 import requests
 
-from src.db import CsvDB
+from db import CsvDB
 
 LATLON = (39.740887, -105.000378)
 
@@ -12,14 +13,15 @@ LATLON = (39.740887, -105.000378)
 def handle(db=CsvDB()):
     result_df = get_aircraft()
 
-    aircraft_icaos = result_df["icao"].tolist()
-
     if not result_df.empty:
         db.write(new_data=result_df)
 
-    for icao in aircraft_icaos:
-        df = db.read(icao, timespan_min=30)
-        check_aircraft_circling(df, icao)
+    if len(result_df) > 0:
+        aircraft_icaos = result_df["icao"].tolist()
+
+        for icao in aircraft_icaos:
+            df = db.read(icao, timespan_min=30)
+            check_aircraft_circling(df)
 
 
 def get_aircraft():
@@ -36,9 +38,18 @@ def get_aircraft():
     return pd.DataFrame(results["ac"])
 
 
-def check_circling(deg=1080):
-    return
-    
+def check_aircraft_circling(df, circling_threshold=1080):
+    headings = get_all_headings(df)
+
+    total_diff = total_heading_change(headings)
+
+    return total_diff >= circling_threshold
+
+
+def total_heading_change(headings):
+
+    return sum(np.diff(headings))
+
 
 def get_all_headings(df):
     df["next_lat"] = df["lat"].shift(-1, axis=0)
