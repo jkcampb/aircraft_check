@@ -21,6 +21,8 @@ def handle(db=CsvDB()):
 
         for icao in aircraft_icaos:
             df = db.read(icao, timespan_min=30)
+
+            print(f"Pulling data for {icao}")
             check_aircraft_circling(df)
 
 
@@ -43,6 +45,8 @@ def check_aircraft_circling(df, circling_threshold=1080):
 
     total_diff = total_heading_change(headings)
 
+    print(f"Heading change: {total_diff}")
+
     return total_diff >= circling_threshold
 
 
@@ -63,6 +67,8 @@ def get_all_headings(df):
             axis=1,
         )
     )
+
+    print(headings)
 
     return headings[:-1]
 

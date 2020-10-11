@@ -23,11 +23,13 @@ class CsvDB:
         try:
             df = pd.read_csv(self.csv_file)
         except FileNotFoundError:
+            print("New file, returning empty DF")
             df = pd.DataFrame()
             return df
 
-        df_filter = (df['icao'] == icao) & \
-             (df['postime'] >= ((datetime.now().timestamp()  - timespan_min * 60) * 1000))
+        df_filter = (df["icao"] == icao) & \
+            (df["postime"] >= (datetime.now().timestamp() - timespan_min * 60) * 1000)
 
+        result = df[df_filter].sort_values("postime")
 
-        return df[df_filter].sort_values("postime", axis=1, inplace=True)
+        return result
